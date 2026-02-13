@@ -1,261 +1,1474 @@
-  
+
 import telebot
 from telebot import types
-import sqlite3
-import json
+import os
 
-TOKEN = "8573382461:AAHsJj-p4DxzZlfaISP3aMTRRrGkOykwUgM"
+# ================= TOKEN =================
+TOKEN = os.getenv("8573382461:AAHsJj-p4DxzZlfaISP3aMTRRrGkOykwUgM")
 bot = telebot.TeleBot(TOKEN)
 
-# ================= DATABASE =================
-conn = sqlite3.connect("bot.db", check_same_thread=False)
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    chat_id INTEGER PRIMARY KEY,
-    state TEXT,
-    category TEXT,
-    answers TEXT,
-    product TEXT,
-    history TEXT
-)
-""")
-conn.commit()
-
-
-def get_user(chat_id):
-    cursor.execute("SELECT * FROM users WHERE chat_id = ?", (chat_id,))
-    row = cursor.fetchone()
-
-    if row:
-        return {
-            "state": row[1],
-            "category": row[2],
-            "answers": json.loads(row[3]) if row[3] else {},
-            "product": row[4],
-            "history": json.loads(row[5]) if row[5] else []
+ 
+#
+user_data = {}
+ 
+ #hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh
+product_map_skin = {
+    "بهتان": {
+        "حساسة": {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            },
+        "دهنية":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "مختلطة":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "جافة":   
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+       } }
+      ,
+    "حبوب": {
+        "حساسة": {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }},
+            
+        "دهنية":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "مختلطة":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "جافة":   
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+       } }
+      ,
+    "تصبغات": {
+        "حساسة": {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            },
+        "دهنية":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "مختلطة":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "جافة":   
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
         }
-    else:
-        user = {
-            "state": "WELCOME",
-            "category": None,
-            "answers": {},
-            "product": None,
-            "history": []
-        }
+     },
+    "جفاف": {
+        "حساسة": {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            },
+        "دهنية":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "مختلطة":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+        "جافة":   
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+    }   } },
+      
+    "دهون زيادة": {
+        "حساسة": {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+            
+        "دهنية":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+             },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "مختلطة":  
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } },
+        "جافة":   
+            {
+            "غسولات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "تونر": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مقشرات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرمات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "مرطبات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسكات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+               "مزيل ميكاب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم نهار وليل" : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+           } }
+     }}
+      
+       
+  
+ ########################################################
 
-        cursor.execute("""
-            INSERT INTO users (chat_id, state, category, answers, product, history)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (chat_id, "WELCOME", None, json.dumps({}), None, json.dumps([])))
+product_map_hair = {
+    "تساقط": {
+       
+            "شامبو": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "بلسم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+            }
+            
+       
+        ,
+      
+    "هيشان": {
+       
+            "شامبو": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "بلسم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+            }
+        
+           
+        ,
+      
+    "قشرة" : {
+        "شامبو": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "بلسم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+            },
+        
+     
+    "جفاف": {
+        "شامبو": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "بلسم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سيرم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "كريم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+            },
+        
+     
+    "تقصف": {
+        "شامبو": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "بلسم": {     
+                "name": "Glow Gentle Cleanser",  
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"  },
+             "سيرم": {
+               "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",     
+                "price": "250 جنيه"  },
+             "كريم": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+            }
+            }
 
-        conn.commit()
-        return user
+ #####################################################################       
+ 
 
+product_map_lip = {
+    "تشققات": {
+       
+                  "مرطب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سكراب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            }
+            
+       
+        ,
+      
+    "جفاف": {
+       
+                    "مرطب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سكراب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            }
+        
+           
+        ,
+      
+    "اسمرار" : {
+        "مرطب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+            "ماسك": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+             "سكراب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }
+            }
+            }
+           
+product_map_personal = {
+    
+       
+      
+        "بادي اسبلاش"  : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+      ,
+        "مزيل عرق": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }   
+            }
+              
+product_map_eye = {
+    
+       
+       "كريم هالات": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+        "باتش للعين"  : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+      ,
+        "سيروم تحت العين": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }   
+            }
+                           
+product_map_body = {
+     "يدين وقدمين": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+       
+       "لوشن": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            },
+        "سكراب"  : {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } 
+      ,
+        "كريم تفتيح": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            } ,
+        "كريم ترطيب": {
+                "name": "Glow Gentle Cleanser",
+                "desc": "ينضف بلطف ويدي إشراقة للبشرة الحساسة",
+                "price": "250 جنيه"
+            }  
+            }   
+###########################################
 
-def save_user(chat_id, user):
-    cursor.execute("""
-        UPDATE users
-        SET state = ?, category = ?, answers = ?, product = ?, history = ?
-        WHERE chat_id = ?
-    """, (
-        user["state"],
-        user["category"],
-        json.dumps(user["answers"]),
-        user["product"],
-        json.dumps(user["history"]),
-        chat_id
-    ))
-    conn.commit()
-
-
-def set_state(chat_id, user, new_state):
-    if user["state"] != new_state:
-        user["history"].append(user["state"])
-        user["state"] = new_state
-        save_user(chat_id, user)
-
-
-def go_back(chat_id, user):
-    if user["history"]:
-        user["state"] = user["history"].pop()
-    else:
-        user["state"] = "MAIN"
-
-    save_user(chat_id, user)
-
-    if user["state"] == "MAIN":
-        bot.send_message(chat_id, "اختار القسم 👇", reply_markup=main_menu())
-    elif user["state"] == "QUESTIONS":
-        ask_questions(chat_id, user)
-    elif user["state"] == "PRODUCT":
-        product_menu(chat_id, user["category"])
-
-
-# ================= PRODUCTS =================
-PRODUCTS = {
-    "face": ["غسولات", "تونر", "مقشرات", "مزيل ميكاب",
-             "سيرمات", "مرطبات", "ماسكات", "كريم نهار وليل"],
-    "hair": ["شامبو", "بلسم", "كريم شعر",
-             "سيرم شعر", "زيوت شعر", "ماسكات شعر"],
-    "body": ["اسكراب جسم", "لوشن للجسم",
-             "واقي شمس", "بادي سبلاش"],
-    "eyes": ["ماسكات وسائد عين", "سيرم تحت العين", "كريم الهالات"],
-    "lips": ["ماسكات شفايف", "اسكراب شفايف", "مرطب شفايف"],
-    "personal": ["يدين وقدمين (ترطيب)",
-                 "يدين وقدمين (تفتيح)", "مزيل عرق"]
-}
-
-CATEGORY_NAMES = {
-    "face": "🧖‍♀️ الوجه",
-    "hair": "💆‍♀️ الشعر",
-    "body": "🧴 الجسم",
-    "eyes": "👁 العين",
-    "lips": "💋 الشفايف",
-    "personal": "🪥 العناية الشخصية"
-}
-
-QUESTIONS = {
-    "face": "نوع بشرتك ايه؟",
-    "hair": "مشكلة شعرك الأساسية ايه؟",
-    "body": "محتاج ايه أكتر؟",
-    "eyes": "مشكلة العين ايه؟",
-    "lips": "شفايفك محتاجة ايه؟",
-    "personal": "اختار نوع العناية 👇"
-}
-
-OPTIONS = {
-    "face": ["دهنية", "جافة", "مختلطة", "حساسة"],
-    "hair": ["تساقط", "هيشان", "قشرة", "جفاف"],
-    "body": ["ترطيب", "تفتيح", "حماية من الشمس"],
-    "eyes": ["هالات", "انتفاخ", "ترطيب"],
-    "lips": ["ترطيب", "تفتيح", "تشقق"],
-    "personal": ["يدين وقدمين", "مزيل عرق"]
-}
-
-
-# ================= MENUS =================
-def start_menu():
+def welcome ():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("▶️ ابدأ")
+    kb.add("start ❤️")
     return kb
 
-
-def main_menu():
+def back_only():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("رجوع")
+    return kb
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.send_message(message.chat.id,  "  اهلا بك في shiny store 💖 \n\nهسالك كام سؤال عشان اختارلك المنتج المناسب ✨", reply_markup=welcome())
+@bot.message_handler(func=lambda m: m.text == "start ❤️")
+def section_one_step1(message):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🧖‍♀️ الوجه", "💆‍♀️ الشعر")
     kb.add("🧴 الجسم", "👁 العين")
     kb.add("💋 الشفايف", "🪥 العناية الشخصية")
-    return kb
+    kb.add("رجوع")
+    bot.send_message(message.chat.id,"اختار القسم المطلوب ☺️" , reply_markup=kb)
+    
+#############################################################################
 
-
-def question_menu(options):
+@bot.message_handler(func=lambda m: m.text == "🧖‍♀️ الوجه")
+def choose_problem_skin(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id] = {}
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for op in options:
-        kb.add(op)
-    kb.add("🔙 رجوع")
-    return kb
+    kb.add("حبوب","تصبغات")
+    kb.add("جفاف","دهون زيادة")
+    kb.add("بهتان")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المشكلة 😌", reply_markup=kb)
+    bot.register_next_step_handler(message, choose_skin)
 
-
-def ask_questions(chat_id, user):
-    cat = user["category"]
-    bot.send_message(
-        chat_id,
-        QUESTIONS[cat],
-        reply_markup=question_menu(OPTIONS[cat])
-    )
-
-
-def product_menu(chat_id, category):
+def choose_skin(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["problem_skin"] = message.text
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    for item in PRODUCTS[category]:
-        kb.add(item)
-    kb.add("🔙 رجوع")
-    bot.send_message(chat_id, "اختار المنتج المناسب 👇", reply_markup=kb)
+    kb.add("دهنية", "جافة")
+    kb.add("مختلطة", "حساسة")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع بشرتك 💆‍♀️", reply_markup=kb)
+    bot.register_next_step_handler(message, choose_product_skin)
 
-
-# ================= START =================
-@bot.message_handler(commands=['start'])
-def start(message):
-    chat_id = message.chat.id
-    user = get_user(chat_id)
-
-    user["state"] = "WELCOME"
-    user["history"].clear()
-    save_user(chat_id, user)
-
-    bot.send_message(
-        chat_id,
-        "أهلاً بيك 👋\n"
-        "هساعدك تختار أنسب منتج ليك 💙\n\n"
-        "اضغط ابدأ 👇",
-        reply_markup=start_menu()
-    )
-
-
-# ================= HANDLER =================
-@bot.message_handler(func=lambda m: True)
-def handle(message):
-    chat_id = message.chat.id
-    text = message.text
-    user = get_user(chat_id)
-
-    if text == "🔙 رجوع":
-        go_back(chat_id, user)
+def choose_product_skin(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
         return
+    user_data[message.chat.id]["skin"] = message.text
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("غسولات","تونر")
+    kb.add("مقشرات","سيرمات")
+    kb.add("مرطبات","ماسكات" )
+    kb.add("كريم نهار وليل")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, skin_result)
 
-    if user["state"] == "WELCOME":
-        if text == "▶️ ابدأ":
-            set_state(chat_id, user, "MAIN")
-            bot.send_message(chat_id, "اختار القسم 👇", reply_markup=main_menu())
+def skin_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
         return
-
-    if user["state"] == "MAIN":
-        categories = {
-            "🧖‍♀️ الوجه": "face",
-            "💆‍♀️ الشعر": "hair",
-            "🧴 الجسم": "body",
-            "👁 العين": "eyes",
-            "💋 الشفايف": "lips",
-            "🪥 العناية الشخصية": "personal"
-        }
-
-        if text in categories:
-            user["category"] = categories[text]
-            user["answers"].clear()
-            save_user(chat_id, user)
-            set_state(chat_id, user, "QUESTIONS")
-            ask_questions(chat_id, user)
-        return
-
-    if user["state"] == "QUESTIONS":
-        user["answers"]["need"] = text
-        save_user(chat_id, user)
-        set_state(chat_id, user, "PRODUCT")
-        product_menu(chat_id, user["category"])
-        return
-
-    if user["state"] == "PRODUCT":
-        if text in PRODUCTS[user["category"]]:
-            user["product"] = text
-            save_user(chat_id, user)
-            set_state(chat_id, user, "DONE")
-
-            bot.send_message(
-                chat_id,
-                f"✅ الترشيح المناسب ليك:\n\n"
-                f"📂 {CATEGORY_NAMES[user['category']]}\n"
-                f"❓ احتياجك: {user['answers']['need']}\n"
-                f"🧴 المنتج: {text}",
-                reply_markup=types.ReplyKeyboardMarkup(resize_keyboard=True).add("🔙 رجوع")
+  
+    user_data[message.chat.id]["product_skin"] = message.text
+    problem = user_data[message.chat.id]["problem_skin"]
+    skin = user_data[message.chat.id]["skin"]
+    product_type = user_data[message.chat.id]["product_skin"]
+    try:
+        product = product_map_skin[problem][skin][product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
             )
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+##############################################################################
+
+@bot.message_handler(func=lambda m: m.text == "💆‍♀️ الشعر")
+def choose_problem_hair(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
         return
+    user_data[message.chat.id] = {}
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("تساقط","هيشان")
+    kb.add("قشرة","تقصف")
+    kb.add("جفاف")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المشكلة 😌", reply_markup=kb)
+    bot.register_next_step_handler(message,choose_product_hair )
 
-    if user["state"] == "DONE":
-        bot.send_message(chat_id, "تقدر ترجع خطوة وتغيّر اختيارك 🔙")
+def choose_product_hair (message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["problem_hair"] = message.text
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("بلسم","شامبو")
+    kb.add("كريم" ,"سيرم")
+    kb.add("ماسك")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, hair_result)
 
 
-# ================= RUN =================
-bot.infinity_polling(skip_pending=True)
+def hair_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["product_hair"] = message.text
+    problem = user_data[message.chat.id]["problem_hair"]
+    product_type = user_data[message.chat.id]["product_hair"]
+    try:
+        product = product_map_hair[problem][product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
+        )
 
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+###############################################################
+
+@bot.message_handler(func=lambda m: m.text == "💋 الشفايف")
+def choose_problem_lip(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id] = {}
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("جفاف",  "تشققات")
+    kb.add( "اسمرار")
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المشكلة 😌", reply_markup=kb)
+    bot.register_next_step_handler(message,choose_product_lip )
+
+def choose_product_lip (message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["problem_lip"] = message.text
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("ماسك","مرطب")
+    kb.add("سكراب" )
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, lip_result)
+
+
+def lip_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["product_lip"] = message.text
+    problem = user_data[message.chat.id]["problem_lip"]
+    product_type = user_data[message.chat.id]["product_lip"]
+    try:
+        product = product_map_lip[problem][product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
+        )
+
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+
+#########################################################################
+
+@bot.message_handler(func=lambda m: m.text == "🪥 العناية الشخصية")
+def choose_product_personal (message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]= {}
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("بادي اسبلاش"  ,"مزيل عرق" )
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, personal_result)
+
+
+def personal_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["product_personal"] = message.text
+    product_type = user_data[message.chat.id]["product_personal"]
+    try:
+        product = product_map_personal[product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
+        )
+
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+##############################################################
+
+@bot.message_handler(func=lambda m: m.text == "👁 العين")
+def choose_product_eye (message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]= {}
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add( "كريم هالات", "باتش للعين" )
+    kb.add(  "سيروم تحت العين" )
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, eye_result)
+
+
+def eye_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["product_eye"] = message.text
+    product_type = user_data[message.chat.id]["product_eye"]
+    try:
+        product = product_map_eye[product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
+        )
+
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+###########################################################################
+
+
+@bot.message_handler(func=lambda m: m.text == "🧴 الجسم")
+def choose_product_body(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id] = {}
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add(  "لوشن", "يدين وقدمين" )
+    kb.add(  "كريم ترطيب",   "كريم تفتيح")
+    kb.add("سكراب" )
+    kb.add("رجوع")
+    bot.send_message(message.chat.id, "اختاري نوع المنتج 🧴", reply_markup=kb)
+    bot.register_next_step_handler(message, body_result)
+
+
+def body_result(message):
+    if message.text == "رجوع":
+        bot.send_message(message.chat.id, "رجعنا للبداية ✨", reply_markup=welcome())
+        return
+    user_data[message.chat.id]["product_body"] = message.text
+    product_type = user_data[message.chat.id]["product_body"]
+    try:
+        product = product_map_body[product_type]
+        bot.send_message(
+            message.chat.id,
+            "✅ الترشيح المناسب ليكي:\n\n"
+            "✨ " + product["name"] + "\n"
+            "📝 " + product["desc"] + "\n"
+            "💰 السعر: " + product["price"]+ "\n"
+            "اطلب الان:" "https://cml47050e0rvd01lh238b165q.wuiltstore.com/ar",
+            reply_markup=back_only()
+        )
+
+    except KeyError:
+        bot.send_message(message.chat.id, "الاختيار ده مش متوفر 🤍")
+
+
+
+
+
+#####################################################
+@bot.message_handler(func=lambda m: m.text == "رجوع")
+def go_home(message):
+    bot.send_message(
+        message.chat.id,
+        "رجعنا للبداية ✨",
+        reply_markup=welcome()
+    )
+bot.infinity_polling(timeout=30, long_polling_timeout=20, skip_pending=True)
