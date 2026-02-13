@@ -1,4 +1,3 @@
-
 import telebot
 from telebot import types
 import os
@@ -1472,3 +1471,4 @@ def go_home(message):
         reply_markup=welcome()
     )
 bot.infinity_polling(timeout=30, long_polling_timeout=20, skip_pending=True)
+
